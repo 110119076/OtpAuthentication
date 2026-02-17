@@ -17,11 +17,20 @@
 <div id="iframeContainer" style="display:none;">
     <iframe
         id="otpFrame"
-        src="https://internetbanking.dev.ibmb.equitasbank.com/otp"
     ></iframe>
 </div>
 
 <script>
+
+    const parentUrl = window.location.href;
+    const iframeSrc =
+    `https://internetbanking.dev.ibmb.equitasbank.com/otp` +
+    `?customerId=11356930` +
+    `&sourceApp=BBPS` +
+    `&transactionId=19ADDE5833` +
+    `&redirect=${parentUrl}`;
+
+  document.getElementById("otpFrame").src = iframeSrc;
 
 function openIframe(){
     document.getElementById("iframeContainer").style.display = "block";
