@@ -15,24 +15,32 @@
 <button onclick="openIframe()">Start OTP</button>
 
 <div id="iframeContainer" style="display:none;">
-    <iframe
-        id="otpFrame"
-    ></iframe>
+    <iframe id="otpFrame"></iframe>
 </div>
 
 <script>
 
-    const parentUrl = window.location.href;
-    const iframeSrc =
-    `https://internetbanking.dev.ibmb.equitasbank.com/otp` +
-    `?customerId=11356930` +
-    `&sourceApp=BBPS` +
-    `&transactionId=19ADDE5833` +
-    `&redirect=${parentUrl}`;
-
-  document.getElementById("otpFrame").src = iframeSrc;
-
 function openIframe(){
+
+    const frame = document.getElementById("otpFrame");
+
+    // ✅ Prevent multiple loads / OTP sessions
+    if (!frame.src) {
+
+        const parentUrl = encodeURIComponent(window.location.href);
+
+        const iframeSrc =
+        `https://internetbanking.dev.ibmb.equitasbank.com/otp` +
+        `?customerId=11356930` +
+        `&userId=11356930` +
+        `&sourceApp=BBPS` +
+        `&transactionId=19ADDE5833` +
+        `&redirect=${parentUrl}`;
+
+        // ⭐ GET call happens ONLY here
+        frame.src = iframeSrc;
+    }
+
     document.getElementById("iframeContainer").style.display = "block";
 }
 
@@ -40,9 +48,9 @@ function openIframe(){
 // 🔥 LISTEN FOR CHILD MESSAGE
 window.addEventListener("message", function(event){
 
-    // ✅ STEP 1 — ALWAYS VALIDATE ORIGIN
     const trustedOrigin = "https://internetbanking.dev.ibmb.equitasbank.com";
 
+    // ✅ Always validate origin
     if(event.origin !== trustedOrigin){
         console.warn("Blocked message from untrusted origin:", event.origin);
         return;
@@ -50,7 +58,6 @@ window.addEventListener("message", function(event){
 
     const data = event.data;
 
-    // ✅ STEP 2 — Validate message structure
     if(data?.type === "OTP_RESULT"){
 
         console.log("OTP Response:", data);
@@ -61,10 +68,9 @@ window.addEventListener("message", function(event){
 
             console.log("Received checkVal:", checkVal);
 
-            // ⭐ CLOSE IFRAME
+            // ✅ Close iframe after success
             document.getElementById("iframeContainer").style.display = "none";
 
-            // ⭐ CALL YOUR BACKEND (Recommended)
             verifyOtpWithServer(checkVal);
         }
         else{
@@ -75,7 +81,7 @@ window.addEventListener("message", function(event){
 });
 
 
-// ⭐ Example backend verification
+// ⭐ Backend verification example
 function verifyOtpWithServer(checkVal){
 
     fetch("/api/verify-otp",{
@@ -88,7 +94,7 @@ function verifyOtpWithServer(checkVal){
     .then(res => res.json())
     .then(data=>{
         console.log("Server verification:", data);
-    })
+    });
 }
 
 </script>
